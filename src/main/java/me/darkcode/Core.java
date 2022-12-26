@@ -1,5 +1,6 @@
 package me.darkcode;
 
+import me.darkcode.game.Game;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -19,14 +20,22 @@ public class Core {
             System.exit(-201);
             return;
         }
-        long windowId = GLFW.glfwCreateWindow(1920, 1080, "Enwiret 0.1", GLFW.glfwGetPrimaryMonitor(), 0);
-        if(windowId == 0L){
+
+        GLFW.glfwDefaultWindowHints();
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
+
+        WindowReference windowReference = new WindowReference(
+                GLFW.glfwCreateWindow(1920, 1080, "Enwiret 0.1", GLFW.glfwGetPrimaryMonitor(), 0)
+        );
+        if(windowReference.getWindowId() == 0L){
             System.exit(-202);
             return;
         }
-        GLFW.glfwMakeContextCurrent(windowId);
+        GLFW.glfwMakeContextCurrent(windowReference.getWindowId());
         GLFW.glfwSwapInterval(1);
-        GLFW.glfwShowWindow(windowId);
+        windowReference.show();
 
         // -----------------------------------------------------
         //
@@ -37,12 +46,15 @@ public class Core {
         GL.createCapabilities();
         GL11.glClearColor(0, 0, 0, 0);
 
-        while(!GLFW.glfwWindowShouldClose(windowId)){
+        Game game = new Game(windowReference);
+
+        while(!GLFW.glfwWindowShouldClose(windowReference.getWindowId())){
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
 
+            game.render();
 
-
-            GLFW.glfwSwapBuffers(windowId);
+            GLFW.glfwSwapBuffers(windowReference.getWindowId());
             GLFW.glfwPollEvents();
         }
 
@@ -51,8 +63,9 @@ public class Core {
         //                       DESTROY
         //
         // -----------------------------------------------------
-        Callbacks.glfwFreeCallbacks(windowId);
-        GLFW.glfwDestroyWindow(windowId);
+        game.exit(Game.Exit.WINDOW_CLOSED);
+        Callbacks.glfwFreeCallbacks(windowReference.getWindowId());
+        GLFW.glfwDestroyWindow(windowReference.getWindowId());
 
         GLFW.glfwTerminate();
         GLFW.glfwSetErrorCallback(null).free();
