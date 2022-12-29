@@ -33,8 +33,8 @@ public class MainShader extends ShaderProgram {
         loadMatrix(transform_matrix, matrix);
     }
 
-    public void loadProjection(WindowReference windowReference, Camera camera){
-        loadMatrix(projection_matrix, RendererUtil.createProjectionMatrix(windowReference, camera));
+    public void loadProjection(WindowReference windowReference){
+        loadMatrix(projection_matrix, RendererUtil.createProjectionMatrix(windowReference));
     }
 
     public void loadView(Camera camera){

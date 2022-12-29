@@ -1,6 +1,7 @@
 package me.darkcode.shader;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -65,6 +66,10 @@ public abstract class ShaderProgram {
 
     protected void loadVector(int location, Vector3f value){
         GL20.glUniform3f(location, value.x, value.y, value.z);
+    }
+
+    protected void load2DVector(int location, Vector2f value){
+        GL20.glUniform2f(location, value.x, value.y);
     }
 
     protected void loadBoolean(int location, boolean value){

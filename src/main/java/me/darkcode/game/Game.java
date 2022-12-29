@@ -1,12 +1,12 @@
 package me.darkcode.game;
 
 import me.darkcode.WindowReference;
-import me.darkcode.objects.Camera;
-import me.darkcode.objects.Location;
-import me.darkcode.objects.ResourceKey;
-import me.darkcode.objects.Rotation;
-import me.darkcode.render.*;
-import me.darkcode.shader.MainShader;
+import me.darkcode.objects.FPS;
+import me.darkcode.render.Renderer;
+import me.darkcode.render.TextureReference;
+import me.darkcode.render.text.FontRenderer;
+import me.darkcode.render.text.TextManager;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -15,81 +15,67 @@ import java.util.List;
 public class Game {
 
     private final List<Renderer> renderers = new ArrayList<>();
-    private int renderingTick;
-
     private final WindowReference windowReference;
-    private final RenderingEntity entity = new RenderingEntity(new TexturedModel(TextureReference.getTexture(new ResourceKey("/textures/images/game_icon_64x.png")),
-            new RenderingModel(
-                    new float[]{
-                            -0.5f, 0.5f, 0,
-                            -0.5f, -0.5f, 0,
-                            0.5f, -0.5f, 0,
-                            0.5f, 0.5f, 0
-                    },
-                    new float[]{
-                            0, 0,
-                            0, 1,
-                            1, 1,
-                            1, 0
-                    },
-                    new float[]{
-                            0, 0, 0,
-                            0, 0, 0,
-                            0, 0, 0,
-                            0, 0, 0
-                    },
-                    new int[]{
-                            0, 1, 3,
-                            3, 1, 2
-                    }
-            )), new Location(0, 0, -10f), new Rotation(0, 0), 1);
+    private int renderingTick;
+    private final GameController controller;
+
+    public GameController getController() {
+        return controller;
+    }
 
     public Game(WindowReference windowReference) {
         this.windowReference = windowReference;
-        renderers.add(new Renderer() {
-            MainShader shader = new MainShader();
-            Camera camera = new Camera(90, 1000, 0.1f, new Location(), new Rotation());
-            {
-                shader.start();
-                shader.loadProjection(windowReference, camera);
-                shader.stop();
-            }
-            @Override
-            public boolean needRender(WindowReference windowReference) {
-                return true;
-            }
+        TextManager.init(this);
+        this.renderers.add(new GameRenderer(this));
+        this.controller = new GameController(this);
+        callbacks();
+        this.renderers.add(new DebugRenderer(this));
+    }
 
+    private void callbacks() {
+        //<editor-fold desc="Callbacks" defaultstate="collapsed">
+        GLFW.glfwSetCursorPosCallback(windowReference.getWindowId(), new GLFWCursorPosCallback() {
             @Override
-            public void render(WindowReference windowReference, int tick) {
-                shader.start();
-                camera.getRotation().add(1, 0);
-                shader.loadView(camera);
-                entity.getLocation().add(0, 0, -0.001f);
-                RendererUtil.render(shader, entity);
-                shader.stop();
+            public void invoke(long window, double xpos, double ypos) {
+                renderers.forEach(a -> a.mousePos((float) xpos, (float) ypos));
             }
-
-            @Override
-            public void destroy() {
-                shader.deleteShader();
-            }
-
         });
+        GLFW.glfwSetMouseButtonCallback(windowReference.getWindowId(), new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {
+                renderers.forEach(a -> a.mouseKey(button, action, mods));
+            }
+        });
+        GLFW.glfwSetCharCallback(windowReference.getWindowId(), new GLFWCharCallback() {
+            @Override
+            public void invoke(long window, int codepoint) {
+                renderers.forEach(a -> a.charKey(codepoint));
+            }
+        });
+        GLFW.glfwSetKeyCallback(windowReference.getWindowId(), new GLFWKeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                renderers.forEach(a -> a.keyboardKey(key, scancode, action, mods));
+            }
+        });
+        //</editor-fold>
     }
 
     public WindowReference getWindowReference() {
         return windowReference;
     }
 
-    public void render(){
+    public void render() {
         GL11.glClearColor(0f, 1f, 1f, 1f);
         renderers.stream().filter(a -> a.needRender(windowReference)).forEach(a -> a.render(windowReference, renderingTick));
+        TextManager.render();
         renderingTick++;
-        renderingTick%=(Integer.MAX_VALUE-1);
+        renderingTick %= (Integer.MAX_VALUE - 1);
+        FPS.tick();
     }
 
     public void exit(Exit exitReason) {
-        if(exitReason.equals(Exit.RIGHT_WAY)){
+        if (exitReason.equals(Exit.RIGHT_WAY)) {
             windowReference.destroy();
         }
         for (Renderer renderer : renderers) {
@@ -97,10 +83,18 @@ public class Game {
         }
         renderers.clear();
         TextureReference.cleanUp();
+        FontRenderer.cleanUp();
     }
 
-    public enum Exit{
-        WINDOW_CLOSED, RIGHT_WAY, UNKNOWN;
+    public enum Exit {
+        WINDOW_CLOSED, RIGHT_WAY, UNKNOWN
     }
 
+    public int getRenderingTick() {
+        return renderingTick;
+    }
+
+    public List<Renderer> getRenderers() {
+        return renderers;
+    }
 }

@@ -1,5 +1,7 @@
 package me.darkcode.objects;
 
+import java.util.Locale;
+
 public class Rotation implements Cloneable{
 
     private float yaw;
@@ -15,24 +17,28 @@ public class Rotation implements Cloneable{
     public Rotation add(float yaw, float pitch){
         this.yaw+=yaw;
         this.pitch+=pitch;
+        crop();
         return this;
     }
 
     public Rotation add(int yaw, int pitch){
         this.yaw+=yaw;
         this.pitch+=pitch;
+        crop();
         return this;
     }
 
     public Rotation subtract(float yaw, float pitch){
         this.yaw-=yaw;
         this.pitch-=pitch;
+        crop();
         return this;
     }
 
     public Rotation subtract(int yaw, int pitch){
         this.yaw-=yaw;
         this.pitch-=pitch;
+        crop();
         return this;
     }
 
@@ -52,6 +58,14 @@ public class Rotation implements Cloneable{
         this.pitch = pitch;
     }
 
+    public void crop(){
+        pitch = Math.max(-90, Math.min(90, pitch));
+        yaw%=360;
+        if(yaw < 0){
+            yaw+=360;
+        }
+    }
+
     @Override
     public Rotation clone() {
         try {
@@ -63,4 +77,9 @@ public class Rotation implements Cloneable{
             throw new AssertionError();
         }
     }
+
+    public String format(String format) {
+        return String.format(Locale.US, format, getYaw(), getPitch());
+    }
+
 }

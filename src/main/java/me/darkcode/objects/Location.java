@@ -1,5 +1,7 @@
 package me.darkcode.objects;
 
+import java.util.Locale;
+
 public class Location implements Cloneable{
 
     private float x, y, z;
@@ -23,6 +25,13 @@ public class Location implements Cloneable{
         this.x += x;
         this.y += y;
         this.z += z;
+        return this;
+    }
+
+    public Location add(Location location) {
+        this.x += location.getX();
+        this.y += location.getY();
+        this.z += location.getZ();
         return this;
     }
 
@@ -75,5 +84,31 @@ public class Location implements Cloneable{
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public float distanceXZ(Location to){
+        float diffX = Math.abs(getX() - to.getX());
+        float diffZ = Math.abs(getZ() - to.getZ());
+        return (float) Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffZ, 2));
+    }
+
+    public String format(String format) {
+        return String.format(Locale.US, format, getX(), getY(), getZ());
+    }
+
+    public int getBlockX() {
+        return (int) Math.floor(getX());
+    }
+
+    public int getBlockY() {
+        return (int) Math.floor(getY());
+    }
+
+    public int getBlockZ() {
+        return (int) Math.floor(getZ());
+    }
+
+    public String formatChunk(String format) {
+        return String.format(Locale.US, format, getBlockX()>>4, getBlockY()/16, getBlockZ()>>4);
     }
 }

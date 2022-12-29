@@ -1,7 +1,10 @@
 package me.darkcode.render;
 
 import me.darkcode.WindowReference;
+import me.darkcode.game.GameSettings;
 import me.darkcode.objects.Camera;
+import me.darkcode.objects.Location;
+import me.darkcode.objects.Rotation;
 import me.darkcode.shader.MainShader;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -57,18 +60,28 @@ public class RendererUtil {
         return matrix;
     }
 
-    public static Matrix4f createProjectionMatrix(WindowReference windowReference, Camera camera) {
+    public static Matrix4f createTransformMatrix(Location location, Rotation rotation, float scale) {
+        Matrix4f matrix = new Matrix4f();
+        matrix.identity();
+        matrix.translate(location.getX(), location.getY(), location.getZ());
+        matrix.rotateY((float) Math.toRadians(rotation.getYaw()));
+        matrix.rotateX((float) Math.toRadians(rotation.getPitch()));
+        matrix.scale(scale);
+        return matrix;
+    }
+
+    public static Matrix4f createProjectionMatrix(WindowReference windowReference) {
         float aspectRatio = (float) windowReference.getWidth() / (float) windowReference.getHeight();
-        float y_scale = (float) ((1f / Math.tan(Math.toRadians(camera.getFOV() / 2f))) * aspectRatio);
+        float y_scale = (float) ((1f / Math.tan(Math.toRadians(GameSettings.getFOV() / 2f))) * aspectRatio);
         float x_scale = y_scale / aspectRatio;
-        float frustum_length = camera.getFarPlane() - camera.getNearPlane();
+        float frustum_length = GameSettings.getFarPlane() - GameSettings.getNearPlane();
 
         projectionMatrix.zero();
         projectionMatrix.m00(x_scale);
         projectionMatrix.m11(y_scale);
-        projectionMatrix.m22(-((camera.getFarPlane()+camera.getNearPlane())/frustum_length));
+        projectionMatrix.m22(-((GameSettings.getFarPlane()+GameSettings.getNearPlane())/frustum_length));
         projectionMatrix.m23(-1);
-        projectionMatrix.m32(-((2*camera.getNearPlane()*camera.getFarPlane())/frustum_length));
+        projectionMatrix.m32(-((2*GameSettings.getNearPlane()*GameSettings.getFarPlane())/frustum_length));
         projectionMatrix.m33(0);
         return projectionMatrix;
     }
@@ -85,4 +98,5 @@ public class RendererUtil {
     public static Matrix4f getProjectionMatrix(){
         return projectionMatrix;
     }
+
 }

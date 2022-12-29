@@ -4,8 +4,17 @@ import me.darkcode.WindowReference;
 
 public interface Renderer {
 
-    public boolean needRender(WindowReference windowReference);
-    public void render(WindowReference windowReference, int tick);
-    public void destroy();
+    boolean needRender(WindowReference windowReference);
 
+    void render(WindowReference windowReference, int tick);
+
+    void destroy();
+
+    void mousePos(float x, float y);
+
+    void mouseKey(int button, int action, int mods);
+
+    void keyboardKey(int key, int scancode, int action, int mods);
+
+    void charKey(int codepoint);
 }

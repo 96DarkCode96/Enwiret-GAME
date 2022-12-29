@@ -1,6 +1,8 @@
 package me.darkcode;
 
 import me.darkcode.game.Game;
+import me.darkcode.render.TextureReference;
+import me.darkcode.render.text.TextManager;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -34,7 +36,7 @@ public class Core {
             return;
         }
         GLFW.glfwMakeContextCurrent(windowReference.getWindowId());
-        GLFW.glfwSwapInterval(1);
+        GLFW.glfwSwapInterval(0);
         windowReference.show();
 
         // -----------------------------------------------------
